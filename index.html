@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MY GAMES - Main</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { 
+            --primary-bg: #fdf2f8; 
+            --card-bg: #ffffff; 
+            --accent: #db2777; 
+            --text: #1f2937; 
+            --header-bg: #ffffff; 
+        }
+
+        body { 
+            background: var(--primary-bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            -webkit-user-select: none; 
+            user-select: none; 
+            overflow-x: hidden;
+        }
+
+        /* Success Popup */
+        .success-popup { 
+            position: fixed; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%) scale(0.7); 
+            background: #ffffff; border: 2px solid var(--accent); 
+            padding: 30px; border-radius: 20px; text-align: center; 
+            z-index: 10000; display: none; flex-direction: column; 
+            align-items: center; box-shadow: 0 10px 30px rgba(219, 39, 119, 0.2); 
+            opacity: 0; transition: all 0.3s ease; 
+        }
+        .success-popup.active { display: flex; transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        .success-popup i { font-size: 50px; color: var(--accent); margin-bottom: 15px; }
+
+        /* Header */
+        .main-header { 
+            background: var(--header-bg); padding: 0 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; 
+            z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: 60px; 
+        }
+        .logo-text { font-size: 22px; font-weight: bold; color: var(--accent); }
+        .logo-text span { color: #333; }
+
+        .notice-bar { 
+            background: var(--accent); color: white; padding: 10px; 
+            display: none; align-items: center; gap: 10px; font-weight: bold; 
+            position: sticky; top: 60px; z-index: 90; 
+        }
+
+        /* Game Grid Area */
+        .game-container { 
+            padding: 15px; display: grid; 
+            grid-template-columns: repeat(3, 1fr); gap: 10px; 
+            max-width: 600px; margin: 0 auto; 
+        }
+        .game-card { 
+            background: var(--card-bg); border: 1px solid #fce7f3; 
+            border-radius: 12px; cursor: pointer; aspect-ratio: 1 / 1; 
+            overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+            transition: 0.2s; position: relative;
+        }
+        .game-card:active { transform: scale(0.95); }
+        .game-card img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Category Badge */
+        .cat-badge {
+            position: absolute; bottom: 5px; right: 5px;
+            background: var(--accent); color: white; font-size: 8px;
+            padding: 2px 5px; border-radius: 4px; font-weight: bold;
+        }
+
+        /* Sidebar & Modals same as before... */
+        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #ffffff; transition: 0.3s ease; z-index: 1000; border-right: 1px solid #eee; }
+        .sidebar.active { left: 0; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .menu-btn-item { display: flex; align-items: center; gap: 15px; padding: 15px 20px; cursor: pointer; color: #444; font-weight: 500; border-bottom: 1px solid #f9f9f9; }
+        .ico-bg { width: 35px; height: 35px; background: #fff1f2; color: var(--accent); display: grid; place-items: center; border-radius: 8px; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: #ffffff; padding: 25px; border-radius: 15px; width: 85%; max-width: 380px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .close-btn { position: absolute; top: 15px; right: 15px; font-size: 20px; color: #999; cursor: pointer; }
+
+        .auth-input-group { background: #f9fafb; border: 1px solid #eee; padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+        .auth-input-group input { background: transparent; border: none; color: #333; outline: none; width: 100%; font-size: 15px; }
+        .btn-auth-submit { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-reg { background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; }
+        .btn-login { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 7px 15px; border-radius: 5px; margin-left: 5px; }
+        .h-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; margin-bottom: 5px; background: #fdfdfd; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="transferSuccessPopup" class="success-popup">
+    <i class="fas fa-check-circle"></i>
+    <h2 id="successTitle">Success</h2>
+    <p id="successMsg">Task Complete!</p>
+</div>
+
+<header class="main-header">
+    <div class="header-left">
+        <i class="fas fa-bars" onclick="toggleSidebar()" style="cursor:pointer; color: var(--accent);"></i>
+        <span class="logo-text" style="margin-left:10px;">MY<span>GAMES</span></span>
+    </div>
+    <div class="header-right" id="guestUI">
+        <button class="btn-reg" onclick="openModal('regModal')">Register</button>
+        <button class="btn-login" onclick="openModal('loginModal')">Login</button>
+    </div>
+</header>
+
+<div class="notice-bar" id="liveNoticeBar">
+    <i class="fas fa-bullhorn" style="margin-left: 10px;"></i>
+    <div style="flex: 1; overflow: hidden;" id="noticeBox"></div>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-user-circle" style="font-size:35px; color: var(--accent);"></i>
+            <div><p id="sidebarUser" style="margin:0; font-weight:bold;">Guest User</p><small style="color:var(--accent);">Online</small></div>
+        </div>
+        <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer; color: #999;"></i>
+    </div>
+    <div class="menu-list">
+        <div class="menu-btn-item" onclick="checkAuth('transferModal')"><div class="ico-bg"><i class="fas fa-paper-plane"></i></div><span>MONEY TRANSFER</span></div>
+        <div class="menu-btn-item" onclick="checkAuth('pinModal')"><div class="ico-bg"><i class="fas fa-key"></i></div><span>CHANGE PIN</span></div>
+        <div class="menu-btn-item" onclick="checkAuth('historyModal')"><div class="ico-bg"><i class="fas fa-history"></i></div><span>TRANSACTION HISTORY</span></div>
+        <div class="menu-btn-item" onclick="checkAuth('logout')" style="color: #ef4444;"><div class="ico-bg"><i class="fas fa-sign-out-alt"></i></div><span>LOG OUT</span></div>
+    </div>
+</div>
+
+<main class="game-container" id="gameList"></main>
+
+<div id="regModal" class="modal-overlay"><div class="modal-content">
+    <i class="fas fa-times close-btn" onclick="closeModal('regModal')"></i>
+    <h3 style="color:var(--accent); margin-top:0;">Registration</h3>
+    <div class="auth-input-group"><i class="fas fa-phone-alt"></i><input type="tel" id="regPhone" placeholder="Phone Number"></div>
+    <div class="auth-input-group"><i class="fas fa-lock"></i><input type="password" id="regPass" placeholder="Set 6-Digit PIN"></div>
+    <div class="auth-input-group"><i class="fas fa-shield-alt"></i><input type="password" id="regConfirmPass" placeholder="Confirm PIN"></div>
+    <button class="btn-auth-submit" onclick="handleRegister()">Create Account</button>
+</div></div>
+
+<div id="loginModal" class="modal-overlay"><div class="modal-content">
+    <i class="fas fa-times close-btn" onclick="closeModal('loginModal')"></i>
+    <h3 style="color:var(--accent); margin-top:0;">Login</h3>
+    <div class="auth-input-group"><i class="fas fa-phone-alt"></i><input type="tel" id="loginPhone" placeholder="Phone Number"></div>
+    <div class="auth-input-group"><i class="fas fa-lock"></i><input type="password" id="loginPass" placeholder="Enter PIN"></div>
+    <button class="btn-auth-submit" onclick="handleLogin()">Login Now</button>
+</div></div>
+
+<div id="lockModal" class="modal-overlay"><div class="modal-content" style="text-align:center;">
+    <i class="fas fa-lock" style="font-size:40px; color:var(--accent); margin-bottom:10px;"></i>
+    <h3>Access Denied!</h3><p>Please login to your account.</p>
+    <button class="btn-auth-submit" onclick="closeModal('lockModal')">OK</button>
+</div></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyChTxo_8hg_6_y2e5BvXQWcpMW-j_wGSOLs",
+        databaseURL: "https://mygameonlin-default-rtdb.firebaseio.com",
+        projectId: "mygameonlin",
+        appId: "1:847986328262:web:823c64f1faf63f768c4dc7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    let currentUser = null;
+
+    // formatting balance
+    const formatBalance = (num) => {
+        if (!num || num < 1000) return Math.floor(num || 0); 
+        if (num < 100000) return (num / 1000).toFixed(2) + "K"; 
+        if (num < 10000000) return (num / 100000).toFixed(2) + "L"; 
+        return (num / 10000000).toFixed(2) + "CR"; 
+    };
+
+    window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('active');
+    window.openModal = (id) => { document.getElementById(id).style.display = 'flex'; };
+    window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+
+    // --- AUTH LOGIC (KEEP YOUR ORIGINAL) ---
+    const saved = localStorage.getItem('onlineUserPhone');
+    if (saved) {
+        onValue(ref(db, 'users/' + saved), (s) => {
+            if (s.exists()) {
+                currentUser = s.val();
+                document.getElementById('sidebarUser').innerText = currentUser.phone;
+                document.getElementById('guestUI').innerHTML = `
+                    <div style="background:#fff; padding:5px 15px; border:2px solid var(--accent); border-radius:10px; color:var(--accent); font-weight:bold; font-size:16px;">
+                        ${formatBalance(currentUser.balance)}
+                    </div>`;
+            }
+        });
+    }
+
+    // --- API & GAME LOADING LOGIC (MAIN UPDATE) ---
+    onValue(ref(db, 'games'), (snapshot) => {
+        const gl = document.getElementById('gameList');
+        gl.innerHTML = ''; 
+        
+        snapshot.forEach((childSnapshot) => {
+            const g = childSnapshot.val();
+            const gameId = childSnapshot.key;
+
+            // শুধুমাত্র মেইন পেজে দেখানোর জন্য (যদি অ্যাডমিন টাইপ 'main' দেয়)
+            if (g.active === true || g.active === "true") {
+                if(g.displayPage === 'main') {
+                    const div = document.createElement('div');
+                    div.className = "game-card";
+                    div.innerHTML = `<img src="${g.photo}">`;
+                    
+                    // যদি এটি ক্যাটাগরি হয় (যেমন: স্লট বাটন)
+                    if(g.type === 'category') {
+                        div.innerHTML += `<div class="cat-badge">LOBBY</div>`;
+                        div.onclick = () => {
+                            if(currentUser) {
+                                // এটি ২য় পেজে (lobby.html) নিয়ে যাবে এবং ওই বাটনের ID পাঠিয়ে দিবে
+                                window.location.href = `${g.apiUrl}?user=${currentUser.phone}&catId=${gameId}`;
+                            } else {
+                                openModal('lockModal');
+                            }
+                        };
+                    } else {
+                        // সরাসরি গেম হলে
+                        div.onclick = () => {
+                            if(currentUser) {
+                                window.location.href = `${g.apiUrl}?user=${currentUser.phone}`;
+                            } else {
+                                openModal('lockModal');
+                            }
+                        };
+                    }
+                    gl.appendChild(div);
+                }
+            }
+        });
+    });
+
+    // Handle Login/Register as per your original code...
+</script>
+</body>
+</html>
